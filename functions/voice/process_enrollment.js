@@ -20,19 +20,19 @@ exports.handler = async function (context, event, callback) {
         twiml,
         "Thank you, recording received, you are now enrolled and ready to log in"
       );
-      twiml.redirect("https://voiceit-4737-dev.twil.io/voice/verify");
+      twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
     } else {
       speak(
         twiml,
         "Thank you, recording received, you will now be asked to record your phrase again"
       );
-      twiml.redirect("https://voiceit-4737-dev.twil.io/voice/enroll?enrollCount=" + enrollCount);
+      twiml.redirect(context.SERVERLESS_BASE_URL + '/enroll?enrollCount=' + enrollCount);
     }
   }
 
   function enrollAgain() {
     speak(twiml, "Your recording was not successful, please try again");
-    twiml.redirect("https://voiceit-4737-dev.twil.io/voice/enroll?enrollCount=" + enrollCount);
+    twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/enroll?enrollCount=' + enrollCount);
   }
 
   // Sleep and wait for Twillio to make file available

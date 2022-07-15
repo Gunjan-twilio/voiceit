@@ -75,8 +75,8 @@ exports.handler = async function (context, event, callback) {
             console.error(err);
             res.send("Error " + err);
           }*/
-
-          twiml.redirect("https://voiceit-4737-dev.twil.io/voice/enroll");
+          var enrollUrl = context.SERVERLESS_BASE_URL + '/voice/enroll'
+          twiml.redirect(enrollUrl);
           callback(null, twiml);
         });
       }

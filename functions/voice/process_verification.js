@@ -31,7 +31,7 @@ exports.handler = async function(context, event, callback) {
           case "STTF":
               speak(twiml, "Verification failed. It seems you may not have said your enrolled phrase. Please try again.");
               numTries = numTries + 1;
-              twiml.redirect('https://voiceit-4737-dev.twil.io/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
               break;
           case "FAIL":
               speak(twiml,"Your verification did not pass, please try again.");
@@ -41,17 +41,17 @@ exports.handler = async function(context, event, callback) {
           case "SSTQ":
               speak(twiml,"Please speak a little louder and try again.");
               numTries = numTries + 1;
-              twiml.redirect('https://voiceit-4737-dev.twil.io/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
               break;
           case "SSTL":
               speak(twiml,"Please speak a little quieter and try again.");
               numTries = numTries + 1;
-              twiml.redirect('https://voiceit-4737-dev.twil.io/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
               break;
           default:
               speak(twiml,"Something went wrong. Your verification did not pass, please try again.");
               numTries = numTries + 1;
-              twiml.redirect('https://voiceit-4737-dev.twil.io/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
           }
       }
   callback(null, twiml);

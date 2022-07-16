@@ -8,7 +8,7 @@ exports.handler = async function (context, event, callback) {
   const twiml = new Twilio.twiml.VoiceResponse();
   const phone = removeSpecialChars(event.From);
 
-  /*//@TODO in airtable add a mapping of phonenumber -> userid, fetch it when it comes in - done
+ //@TODO in airtable add a mapping of phonenumber -> userid, fetch it when it comes in - done
   //@TODO helper functions in one place
   //@TODO move URL to environment variables - done
   //@TODO add an option to delete all the enrollments - done
@@ -16,16 +16,6 @@ exports.handler = async function (context, event, callback) {
   //@TODO review the list of the languages
 
   
-  myVoiceIt.deleteAllEnrollments({
-      userId: userId,
-      }, async (jsonResponse)=>{
-        console.log("deleteAllEnrollments JSON: ", jsonResponse.message);
-        speak(twiml, "You have chosen to re enroll your voice, you will now be asked to say a phrase three times, then you will be able to log in with that phrase");
-        twiml.redirect('/enroll');
-        res.type('text/xml');
-        res.send(twiml.toString());
-    });
-  */
   const userId = await callerUserId(phone, context);
   console.log("UserId " + userId);
   console.log("phone " + phone);

@@ -1,13 +1,17 @@
 const voiceit2 = require("voiceit2-nodejs");
+const Airtable = require("airtable");
 exports.handler = async function (context, event, callback) {
-  let myVoiceIt = new voiceit2(context.VOICEIT_API_KEY, context.VOICEIT_API_TOKEN);
+  let myVoiceIt = new voiceit2(
+    context.VOICEIT_API_KEY,
+    context.VOICEIT_API_TOKEN
+  );
   const twiml = new Twilio.twiml.VoiceResponse();
   const phone = removeSpecialChars(event.From);
-  const userId = 'usr_0e68e1339d2544d3ab63659200b30007';
-  /*//@TODO in airtable add a mapping of phonenumber -> userid, fetch it when it comes in
+
+  /*//@TODO in airtable add a mapping of phonenumber -> userid, fetch it when it comes in - done
   //@TODO helper functions in one place
-  //@TODO move URL to environment variables
-  //@TODO add an option to delete all the enrollments 
+  //@TODO move URL to environment variables - done
+  //@TODO add an option to delete all the enrollments - done
   //@TODO change the phrase
   //@TODO review the list of the languages
 
@@ -22,19 +26,19 @@ exports.handler = async function (context, event, callback) {
         res.send(twiml.toString());
     });
   */
-  //const userid = await callerUserId(phone);
-  console.log('UserId ' + userId);
-  console.log('phone ' + phone);
-  console.log('API_KEY ' + context.VOICEIT_API_KEY);
-  console.log('TOKEN ' + context.VOICEIT_API_TOKEN);
-  myVoiceIt.getAllUsers((vals) => {console.log('count ' + vals);});
+  const userId = await callerUserId(phone, context);
+  console.log("UserId " + userId);
+  console.log("phone " + phone);
+  console.log("API_KEY " + context.VOICEIT_API_KEY);
+  console.log("TOKEN " + context.VOICEIT_API_TOKEN);
+
   // Check for user in VoiceIt db
- /* myVoiceIt.checkUserExists(
+  myVoiceIt.checkUserExists(
     {
       userId: userId,
     },
     async (jsonResponse) => {
-      console.log('jsonResponse' + jsonResponse);
+      console.log("jsonResponse" + JSON.stringify(jsonResponse));
       // User already exists
       if (jsonResponse.exists === true) {
         // Greet the caller when their account profile is recognized by the VoiceIt API.
@@ -45,51 +49,80 @@ exports.handler = async function (context, event, callback) {
         // Let's provide the caller with an opportunity to enroll by typing `1` on
         // their phone's keypad. Use the <Gather> verb to collect user input
         const gather = twiml.gather({
-          action: "https://voiceit-4737-dev.twil.io/voice/enroll_or_verify",
+          action: context.SERVERLESS_BASE_URL + "/enroll_or_verify",
           numDigits: 1,
           timeout: 5,
         });
         speak(gather, "You may now log in, or press one to re enroll");
-        twiml.redirect("https://voiceit-4737-dev.twil.io/voice/enroll_or_verify?digits=TIMEOUT");
+        twiml.redirect(
+          context.SERVERLESS_BASE_URL + "/enroll_or_verify?digits=TIMEOUT"
+        );
         callback(null, twiml);
-      } else {*/
+      } else {
         // Create a new user for new number
         myVoiceIt.createUser(async (jsonResponse) => {
-          console.log('create user response ' + JSON.stringify(jsonResponse)),
-          speak(
-            twiml,
-            "Welcome to the Voice It Verification Demo, you are a new user and will now be enrolled"
-          );
-          /* TODO replace with Airtable
-          try {
-            const client = await pool.connect();
-            const result = await client.query(
-              "insert into users values (" +
-                phone +
-                ", '" +
-                jsonResponse.userId +
-                "')"
+          console.log("create user response " + JSON.stringify(jsonResponse)),
+            speak(
+              twiml,
+              "Welcome to the Voice It Verification Demo, you are a new user and will now be enrolled"
             );
-            client.release();
-          } catch (err) {
-            console.error(err);
-            res.send("Error " + err);
-          }*/
-          var enrollUrl = context.SERVERLESS_BASE_URL + '/voice/enroll'
-          twiml.redirect(enrollUrl);
+            var base = new Airtable({ apiKey: context.AIRTABLE_API_KEY }).base(
+              context.AIRTABLE_BASE_ID
+            );
+
+          base("Voice Biometric").create(
+            [
+              {
+                fields: {
+                  "Phone Number": phone,
+                  "Biometric UserId": jsonResponse.userId,
+                },
+              },
+            ],
+            function (err) {
+              if (err) {
+                console.error(err);
+              }
+            }
+          );
+          twiml.redirect(context.SERVERLESS_BASE_URL + "/enroll");
           callback(null, twiml);
         });
       }
-   // }
- // );
-//  callback(null, twiml);
-//};
-function removeSpecialChars(text){
-  return text.replace(/[^0-9a-z]/gi, '');
+    }
+  );
+  //callback(null, twiml);
+};
+
+
+function removeSpecialChars(text) {
+  return text.replace(/[^0-9a-z]/gi, "");
 }
-function speak(twiml, textToSpeak, contentLanguage = "en-US"){
+function speak(twiml, textToSpeak, contentLanguage = "en-US") {
   twiml.say(textToSpeak, {
     voice: "alice",
-    language: contentLanguage
+    language: contentLanguage,
   });
 }
+
+const callerUserId = async (phone, context) => {
+  console.log("In callerUserId from airtable");
+  let userId = 0;
+  try {
+    var base = new Airtable({ apiKey: context.AIRTABLE_API_KEY }).base(
+      context.AIRTABLE_BASE_ID
+    );
+    const records = await base("Voice Biometric").select().all();
+    records.forEach(function (record) {
+      let record_phone = record.get("Phone Number");
+      if (record_phone == phone) {
+        userId = record.get("Biometric UserId");
+        console.log("In callerUserId userId" + userId);
+        return userId;
+      }
+    });
+  } catch (err) {
+    console.log("error in callerUserId " + err);
+  }
+  return userId;
+};

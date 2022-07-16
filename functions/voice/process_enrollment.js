@@ -1,12 +1,14 @@
 const voiceit2 = require("voiceit2-nodejs");
+const Airtable = require("airtable");
 exports.handler = async function (context, event, callback) {
   console.log('Process Enrollment enrollmentCount ' + event.enrollCount);
   let myVoiceIt = new voiceit2(
     context.VOICEIT_API_KEY,
     context.VOICEIT_API_TOKEN
   );
-  //const userId = await callerUserId(removeSpecialChars(req.body.From));
-  const userId = 'usr_0e68e1339d2544d3ab63659200b30007';
+
+  var phone = removeSpecialChars(event.From);
+  const userId = await callerUserId(phone, context);
   var enrollCount = event.enrollCount;
   const recordingURL = event.RecordingUrl + ".wav";
   const twiml = new Twilio.twiml.VoiceResponse();
@@ -20,7 +22,7 @@ exports.handler = async function (context, event, callback) {
         twiml,
         "Thank you, recording received, you are now enrolled and ready to log in"
       );
-      twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
+      twiml.redirect(context.SERVERLESS_BASE_URL + '/verify');
     } else {
       speak(
         twiml,
@@ -32,7 +34,7 @@ exports.handler = async function (context, event, callback) {
 
   function enrollAgain() {
     speak(twiml, "Your recording was not successful, please try again");
-    twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/enroll?enrollCount=' + enrollCount);
+    twiml.redirect(context.SERVERLESS_BASE_URL + '/enroll?enrollCount=' + enrollCount);
   }
 
   // Sleep and wait for Twillio to make file available
@@ -65,3 +67,25 @@ function speak(twiml, textToSpeak, contentLanguage = "en-US") {
     language: contentLanguage,
   });
 }
+
+const callerUserId = async (phone, context) => {
+  console.log("In callerUserId from airtable");
+  let userId = 0;
+  try {
+    var base = new Airtable({ apiKey: context.AIRTABLE_API_KEY }).base(
+      context.AIRTABLE_BASE_ID
+    );
+    const records = await base("Voice Biometric").select().all();
+    records.forEach(function (record) {
+      let record_phone = record.get("Phone Number");
+      if (record_phone == phone) {
+        userId = record.get("Biometric UserId");
+        console.log("In callerUserId userId" + userId);
+        return userId;
+      }
+    });
+  } catch (err) {
+    console.log("error in callerUserId " + err);
+  }
+  return userId;
+};

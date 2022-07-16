@@ -1,12 +1,13 @@
 const voiceit2 = require("voiceit2-nodejs");
-//@TODO : move the url to env variable
+const Airtable = require("airtable");
+var numTries = 0;
+
 //@TODO : Persist the userid in airtable
 //@TODO
 exports.handler = async function(context, event, callback) {
   const twiml = new Twilio.twiml.VoiceResponse();
-  const userId = 'usr_0e68e1339d2544d3ab63659200b30007';
   let myVoiceIt = new voiceit2(context.VOICEIT_API_KEY, context.VOICEIT_API_TOKEN);
-  //const userId = await callerUserId(removeSpecialChars(req.body.From));
+  const userId = await callerUserId(removeSpecialChars(event.From), context);
   const recordingURL = event.RecordingUrl + '.wav';
 
   // Sleep and wait for Twillio to make file available
@@ -31,7 +32,7 @@ exports.handler = async function(context, event, callback) {
           case "STTF":
               speak(twiml, "Verification failed. It seems you may not have said your enrolled phrase. Please try again.");
               numTries = numTries + 1;
-              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/verify');
               break;
           case "FAIL":
               speak(twiml,"Your verification did not pass, please try again.");
@@ -41,17 +42,17 @@ exports.handler = async function(context, event, callback) {
           case "SSTQ":
               speak(twiml,"Please speak a little louder and try again.");
               numTries = numTries + 1;
-              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/verify');
               break;
           case "SSTL":
               speak(twiml,"Please speak a little quieter and try again.");
               numTries = numTries + 1;
-              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/verify');
               break;
           default:
               speak(twiml,"Something went wrong. Your verification did not pass, please try again.");
               numTries = numTries + 1;
-              twiml.redirect(context.SERVERLESS_BASE_URL + '/voice/verify');
+              twiml.redirect(context.SERVERLESS_BASE_URL + '/verify');
           }
       }
   callback(null, twiml);
@@ -74,3 +75,25 @@ function speak(twiml, textToSpeak, contentLanguage = "en-US"){
     language: contentLanguage
   });
 }
+
+const callerUserId = async (phone, context) => {
+  console.log("In callerUserId from airtable");
+  let userId = 0;
+  try {
+    var base = new Airtable({ apiKey: context.AIRTABLE_API_KEY }).base(
+      context.AIRTABLE_BASE_ID
+    );
+    const records = await base("Voice Biometric").select().all();
+    records.forEach(function (record) {
+      let record_phone = record.get("Phone Number");
+      if (record_phone == phone) {
+        userId = record.get("Biometric UserId");
+        console.log("In callerUserId userId" + userId);
+        return userId;
+      }
+    });
+  } catch (err) {
+    console.log("error in callerUserId " + err);
+  }
+  return userId;
+};

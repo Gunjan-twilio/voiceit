@@ -9,11 +9,12 @@ exports.handler = async function (context, event, callback) {
   const phone = removeSpecialChars(event.From);
 
  //@TODO in airtable add a mapping of phonenumber -> userid, fetch it when it comes in - done
-  //@TODO helper functions in one place
+  //@TODO helper functions in one place - @Rustam
   //@TODO move URL to environment variables - done
   //@TODO add an option to delete all the enrollments - done
   //@TODO change the phrase
   //@TODO review the list of the languages
+  //@TODO Readme - @rustam
 
   
   const userId = await callerUserId(phone, context);
@@ -81,7 +82,6 @@ exports.handler = async function (context, event, callback) {
       }
     }
   );
-  //callback(null, twiml);
 };
 
 

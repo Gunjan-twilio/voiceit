@@ -57,7 +57,7 @@ exports.handler = async function (context, event, callback) {
   }, async (jsonResponse) => {
     console.log('createVoiceVerificationByUrl: ', jsonResponse.message);
 
-    if (jsonResponse.responseCode == 'SUCC') {
+    if (jsonResponse.responseCode === 'SUCC') {
       speak(twiml, 'Verification successful!');
       speak(twiml, 'Thank you for calling voice its voice biometrics demo. Have a nice day!');
       // Hang up

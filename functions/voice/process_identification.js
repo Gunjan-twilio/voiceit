@@ -42,12 +42,12 @@ exports.handler = async function (context, event, callback) {
   // eslint-disable-next-line no-undef
   const twiml = new Twilio.twiml.VoiceResponse();
   const myVoiceIt = new Voiceit2(context.VOICEIT_API_KEY, context.VOICEIT_API_TOKEN);
-  const userId = await callerUserId(removeSpecialChars(event.From), context);
-  const recordingURL = `${event.RecordingUrl}.wav`;
+  const groupId = await callerGroupId(removeSpecialChars(event.From), context);
+  const audioFileURL = `${event.RecordingUrl}.wav`;
 
   myVoiceIt.voiceIdentificationByUrl({
-    groupId: '<groupId>',
-    audioFileURL: recordingURL,
+    groupId,
+    audioFileURL,
     phrase: context.VOICEPRINT_PHRASE,
     contentLanguage: context.CONTENT_LANGUAGE,
   }, async (jsonResponse) => {

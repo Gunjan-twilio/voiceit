@@ -1,4 +1,12 @@
+function speak(twiml, textToSpeak, contentLanguage = 'en-US') {
+  twiml.say(textToSpeak, {
+    voice: 'alice',
+    language: contentLanguage,
+  });
+}
+
 exports.handler = async function (context, event, callback) {
+  // eslint-disable-next-line no-undef
   const twiml = new Twilio.twiml.VoiceResponse();
   console.log(`Event${event}`);
   console.log(`enrollCount${event.enrollCount}`);
@@ -15,13 +23,3 @@ exports.handler = async function (context, event, callback) {
 
   callback(null, twiml);
 };
-
-function removeSpecialChars(text) {
-  return text.replace(/[^0-9a-z]/gi, '');
-}
-function speak(twiml, textToSpeak, contentLanguage = 'en-US') {
-  twiml.say(textToSpeak, {
-    voice: 'alice',
-    language: contentLanguage,
-  });
-}

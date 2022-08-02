@@ -45,7 +45,7 @@ const deleteUserId = async (phone, context) => {
     const records = await base('Voice Biometric').select().all();
     records.forEach((record) => {
       const recordPhone = record.get('Phone Number');
-      if (recordPhone == phone) {
+      if (recordPhone === phone) {
         recordIdToDelete = record.getId();
       }
     });

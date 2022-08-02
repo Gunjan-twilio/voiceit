@@ -14,9 +14,26 @@
     "voiceit2-nodejs": "2.5.3"
   },
   "devDependencies": {
+    "eslint": "^8.21.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsx-a11y": "^6.6.1",
+    "eslint-plugin-react": "^7.30.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "twilio-run": "^3.4.2"
   },
   "engines": {
     "node": "14"
+  },
+  "eslintConfig": {
+    "extends": [
+      "airbnb"
+    ],
+    "ignorePatterns": [".twilioserverlessrc"],
+    "rules": {
+      "linebreak-style": 0,
+      "indent": 2,
+      "func-names": 0
+    }
   }
 }

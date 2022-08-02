@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 const Voiceit2 = require('voiceit2-nodejs');
 const Airtable = require('airtable');
 
@@ -14,7 +15,7 @@ function removeSpecialChars(text) {
   return text.replace(/[^0-9a-z]/gi, '');
 }
 
-const callerUserId = async (phone, context) => {
+const callerGroupId = async (phone, context) => {
   console.log('In callerUserId from airtable');
   let userId = 0;
   try {
@@ -37,8 +38,6 @@ const callerUserId = async (phone, context) => {
   return userId;
 };
 
-// @TODO : Persist the userid in airtable
-// @TODO
 exports.handler = async function (context, event, callback) {
   // eslint-disable-next-line no-undef
   const twiml = new Twilio.twiml.VoiceResponse();
@@ -46,18 +45,15 @@ exports.handler = async function (context, event, callback) {
   const userId = await callerUserId(removeSpecialChars(event.From), context);
   const recordingURL = `${event.RecordingUrl}.wav`;
 
-  // Sleep and wait for Twillio to make file available
-  // eslint-disable-next-line no-promise-executor-return
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  myVoiceIt.voiceVerificationByUrl({
-    userId,
+  myVoiceIt.voiceIdentificationByUrl({
+    groupId: '<groupId>',
     audioFileURL: recordingURL,
     phrase: context.VOICEPRINT_PHRASE,
     contentLanguage: context.CONTENT_LANGUAGE,
   }, async (jsonResponse) => {
     console.log('createVoiceVerificationByUrl: ', jsonResponse.message);
 
-    if (jsonResponse.responseCode == 'SUCC') {
+    if (jsonResponse.responseCode === 'SUCC') {
       speak(twiml, 'Verification successful!');
       speak(twiml, 'Thank you for calling voice its voice biometrics demo. Have a nice day!');
       // Hang up

@@ -1,77 +1,34 @@
 const VoiceIt = require('voiceit2-nodejs');
-const Airtable = require('airtable');
 
-function removeSpecialChars(text) {
-  return text.replace(/[^0-9a-z]/gi, '');
-}
-function speak(twiml, textToSpeak, contentLanguage = 'en-US') {
-  twiml.say(textToSpeak, {
-    voice: 'alice',
-    language: contentLanguage,
-  });
-}
-
-const callerUserId = async (phone, context) => {
-  console.log('In callerUserId from airtable');
-  let userId = 0;
-  try {
-    const base = new Airtable({ apiKey: context.AIRTABLE_API_KEY }).base(
-      context.AIRTABLE_BASE_ID,
-    );
-    const records = await base('Voice Biometric').select().all();
-    // eslint-disable-next-line consistent-return
-    records.forEach((record) => {
-      const recordPhone = record.get('Phone Number');
-      if (recordPhone === phone) {
-        userId = record.get('Biometric UserId');
-        console.log(`In callerUserId userId${userId}`);
-        return userId;
-      }
-    });
-  } catch (err) {
-    console.log(`error in callerUserId ${err}`);
+function handleSuccessfulEnrollment(twiml, enrollmentCount, baseUrl) {
+  // VoiceIt requires at least 3 successful enrollments.
+  const thereAreEnoughEnrollments = enrollmentCount > 2;
+  if (thereAreEnoughEnrollments) {
+    twiml.say('Thank you, recording received, you are now enrolled and ready to log in');
+    twiml.redirect(`${baseUrl}/verify`);
+  } else {
+    twiml.say('Thank you, recording received,you will now be asked to record your phrase again');
+    twiml.redirect(`${baseUrl}/enroll?enrollmentCount=${enrollmentCount}`);
   }
-  return userId;
-};
+}
 
 exports.handler = async function (context, event, callback) {
-  console.log(`Process Enrollment enrollmentCount ${event.enrollCount}`);
+  console.log(`Process Enrollment enrollmentCount ${event.enrollmentCount}`);
   const myVoiceIt = new VoiceIt(
     context.VOICEIT_API_KEY,
     context.VOICEIT_API_TOKEN,
   );
 
-  const phone = removeSpecialChars(event.From);
-  const userId = await callerUserId(phone, context);
-  let { enrollCount } = event;
+  const userId = event.request.cookies.userId || '';
+  let { enrollmentCount } = event;
+
+  enrollmentCount = parseInt(enrollmentCount, 10);
   const recordingURL = `${event.RecordingUrl}.wav`;
   // eslint-disable-next-line no-undef
   const twiml = new Twilio.twiml.VoiceResponse();
-  function enrollmentDone() {
-    enrollCount += 1;
-    // VoiceIt requires at least 3 successful enrollments.
-    if (enrollCount > 2) {
-      speak(
-        twiml,
-        'Thank you, recording received, you are now enrolled and ready to log in',
-      );
-      twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
-    } else {
-      speak(
-        twiml,
-        'Thank you, recording received, you will now be asked to record your phrase again',
-      );
-      twiml.redirect(`${context.SERVERLESS_BASE_URL}/enroll?enrollCount=${enrollCount}`);
-    }
-  }
+  // eslint-disable-next-line no-undef
+  const response = new Twilio.Response();
 
-  function enrollAgain() {
-    speak(twiml, 'Your recording was not successful, please try again');
-    twiml.redirect(`${context.SERVERLESS_BASE_URL}/enroll?enrollCount=${enrollCount}`);
-  }
-
-  // Sleep and wait for Twillio to make file available
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
   myVoiceIt.createVoiceEnrollmentByUrl(
     {
       userId,
@@ -81,13 +38,20 @@ exports.handler = async function (context, event, callback) {
     },
     async (jsonResponse) => {
       console.log('createVoiceEnrollmentByUrl json: ', jsonResponse.message);
-      if (jsonResponse.responseCode === 'SUCC') {
-        enrollmentDone();
+      const enrollmentWasSuccessful = jsonResponse.responseCode === 'SUCC';
+      if (enrollmentWasSuccessful) {
+        enrollmentCount += 1;
+        handleSuccessfulEnrollment(twiml, enrollmentCount, context.SERVERLESS_BASE_URL);
       } else {
-        enrollAgain();
+        twiml.say('Your recording was not successful, please try again');
+        twiml.redirect(`${context.SERVERLESS_BASE_URL}/enroll?enrollmentCount=${enrollmentCount}`);
       }
 
-      callback(null, twiml);
+      response
+        .setBody(twiml.toString())
+        .appendHeader('Content-Type', 'text/xml');
+
+      callback(null, response);
     },
   );
 };

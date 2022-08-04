@@ -1,59 +1,14 @@
 /* eslint-disable consistent-return */
-const Airtable = require('airtable');
+const AirTable = require('airtable');
 const Voiceit2 = require('voiceit2-nodejs');
 
 function removeSpecialChars(text) {
   return text.replace(/[^0-9a-z]/gi, '');
 }
 
-const callerUserId = async (phone, context) => {
-  let userId = 0;
-  try {
-    const base = new Airtable({ apiKey: context.AIRTABLE_API_KEY }).base(
-      context.AIRTABLE_BASE_ID,
-    );
-    const records = await base('Voice Biometric').select().all();
-    records.forEach((record) => {
-      const recordPhone = record.get('Phone Number');
-      if (recordPhone === phone) {
-        userId = record.get('Biometric UserId');
-        return userId;
-      }
-    });
-  } catch (err) {
-    console.log(err);
-  }
-  return userId;
-};
-
-// eslint-disable-next-line no-unused-vars
-const deleteUserId = async (phone, context) => {
-  const userId = 0;
-  try {
-    const base = new Airtable({ apiKey: context.AIRTABLE_API_KEY }).base(
-      context.AIRTABLE_BASE_ID,
-    );
-    // eslint-disable-next-line no-unused-vars
-    let recordIdToDelete = '';
-    const records = await base('Voice Biometric').select().all();
-    records.forEach((record) => {
-      const recordPhone = record.get('Phone Number');
-      if (recordPhone === phone) {
-        recordIdToDelete = record.getId();
-      }
-    });
-    // @TODO: turn voice biometric into an environment variable
-    // eslint-disable-next-line no-unused-vars
-    base('Voice Biometric').destroy(['recbKxkEDgw2qivAe'], (err, deletedRecords) => {
-      if (err) {
-        console.error(err);
-      }
-    });
-  } catch (err) {
-    console.log(err);
-  }
-  return userId;
-};
+const DELETE_ENROLLMENTS_DIGIT = '1';
+const DELETE_ACCOUNT_DIGIT = '2';
+const ADD_ANOTHER_USER = '3';
 
 exports.handler = async function (context, event, callback) {
   const myVoiceIt = new Voiceit2(
@@ -64,14 +19,10 @@ exports.handler = async function (context, event, callback) {
   const twiml = new Twilio.twiml.VoiceResponse();
   const digits = event.Digits;
   const phone = removeSpecialChars(event.From);
-  let userId = event.request.cookies.userId || '';
-  console.log(`Retrieved cookie userId: ${userId}`);
-  if (userId === '') {
-    userId = await callerUserId(phone, context);
-  }
+  const userId = event.request.cookies.userId || '';
   // When the caller asked to enroll by pressing `1`, provide friendly
   // instructions, otherwise, we always assume their intent is to verify.
-  if (digits === 1) {
+  if (digits === DELETE_ENROLLMENTS_DIGIT) {
     // Delete User's voice enrollments and re-enroll
     myVoiceIt.deleteAllEnrollments(
       {
@@ -85,20 +36,37 @@ exports.handler = async function (context, event, callback) {
         callback(null, twiml);
       },
     );
-  } else if (digits === 2) {
-    // const deleteProgress = await deleteUserId(phone, context);
-    // myVoiceIt.deleteAllEnrollments(
-    //   {
-    //     userId: userId,
-    //   },
-    //   async (jsonResponse) => {
-    //     speak(
-    //       twiml,
-    //       "You have chosen to delete your account"
-    //     );
-    //     callback(null, twiml);
-    //   }
-    // );
+  } else if (digits === DELETE_ACCOUNT_DIGIT) {
+    const base = new AirTable({ apiKey: context.AIRTABLE_API_KEY }).base(
+      context.AIRTABLE_BASE_ID,
+    );
+    base('Voice Biometric').select().all().then((records) => {
+      let recordIdToDelete = '';
+      records.forEach((record) => {
+        const recordPhone = record.get('Phone Number');
+        if (recordPhone === phone) {
+          recordIdToDelete = record.getId();
+        }
+      });
+      console.log(`the target record id: ${recordIdToDelete}`);
+      base('Voice Biometric').destroy([recordIdToDelete], (err, deletedRecords) => {
+        console.log(err);
+        console.log(`deleted records length ${deletedRecords.length}`);
+        myVoiceIt.deleteAllEnrollments(
+          {
+            userId,
+          },
+          async () => {
+            twiml.say('Account deleted, goodbye!');
+            callback(null, twiml);
+          },
+        );
+      });
+    });
+  } else if (digits === ADD_ANOTHER_USER) {
+    myVoiceIt.createGroup((createGroupResponse) => {
+
+    });
   } else {
     // Check for number of enrollments > 2
     myVoiceIt.getAllVoiceEnrollments(

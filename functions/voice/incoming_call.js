@@ -38,12 +38,13 @@ exports.handler = async function (context, event, callback) {
   const twiml = new Twilio.twiml.VoiceResponse();
   const phone = removeSpecialChars(event.From);
 
-  // @TODO in airtable add a mapping of phonenumber -> userid, fetch it when it comes in - done
-  // @TODO helper functions in one place
-  // @TODO move URL to environment variables - done
-  // @TODO add an option to delete all the enrollments - done
-  // @TODO change the phrase
-  // @TODO review the list of the languages
+ //@TODO in airtable add a mapping of phonenumber -> userid, fetch it when it comes in - done
+  //@TODO helper functions in one place - @Rustam
+  //@TODO move URL to environment variables - done
+  //@TODO add an option to delete all the enrollments - done
+  //@TODO change the phrase
+  //@TODO review the list of the languages
+  //@TODO Readme - @rustam
   // @TODO store userId or groupId in cookies to not call databases too much
 
   let userId = await callerUserId(phone, context);

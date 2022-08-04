@@ -64,9 +64,40 @@ exports.handler = async function (context, event, callback) {
       });
     });
   } else if (digits === ADD_ANOTHER_USER) {
-    myVoiceIt.createGroup((createGroupResponse) => {
-
-    });
+    // @TODO: cant create a group if the user already created one,
+    // in that case just add another user to the group
+    // @TODO: consider a case where a new user being added to the group does not finish enrolling?
+    // Cancel the group or somehow finish the enrollments?
+    // myVoiceIt.createGroup(
+    //   'Group Name',
+    //   async (createGroupResponse) => {
+    //     myVoiceIt.addUserToGroup({ userId, groupId: createGroupResponse.groupId });
+    // eslint-disable-next-line max-len
+    //     twiml.say('Welcome to the Voice It Verification Demo Test, you are a new user and will now be enrolled');
+    //     userId = createUserResponse.userId;
+    //     /* Code for inserting new user into a database */
+    //     const base = new AirTable({ apiKey: context.AIRTABLE_API_KEY }).base(
+    //       context.AIRTABLE_BASE_ID,
+    //     );
+    //     base('Voice Biometric').create(
+    //       [
+    //         {
+    //           fields: {
+    //             'Phone Number': phone,
+    //             'Biometric UserId': userId,
+    //           },
+    //         },
+    //       ],
+    //       (err) => {
+    //         if (err) {
+    //           console.error(err);
+    //         }
+    //       },
+    //     );
+    //     /* Code for inserting new user into a database */
+    //     twiml.redirect(`${context.SERVERLESS_BASE_URL}/enroll`);
+    //   },
+    // );
   } else {
     // Check for number of enrollments > 2
     myVoiceIt.getAllVoiceEnrollments(

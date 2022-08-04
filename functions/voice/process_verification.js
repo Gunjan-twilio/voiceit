@@ -3,13 +3,6 @@ const Airtable = require('airtable');
 
 let numTries = 0;
 
-function speak(twiml, textToSpeak, contentLanguage = 'en-US') {
-  twiml.say(textToSpeak, {
-    voice: 'alice',
-    language: contentLanguage,
-  });
-}
-
 function removeSpecialChars(text) {
   return text.replace(/[^0-9a-z]/gi, '');
 }
@@ -58,36 +51,36 @@ exports.handler = async function (context, event, callback) {
     console.log('createVoiceVerificationByUrl: ', jsonResponse.message);
 
     if (jsonResponse.responseCode === 'SUCC') {
-      speak(twiml, 'Verification successful!');
-      speak(twiml, 'Thank you for calling voice its voice biometrics demo. Have a nice day!');
+      twiml.say('Verification successful!');
+      twiml.say('Thank you for calling voice its voice biometrics demo. Have a nice day!');
       // Hang up
     } else if (numTries > 2) {
       // 3 attempts failed
-      speak(twiml, 'Too many failed attempts. Please call back and select option 1 to re enroll and verify again.');
+      twiml.say('Too many failed attempts. Please call back and select option 1 to re enroll and verify again.');
     } else {
       switch (jsonResponse.responseCode) {
         case 'STTF':
-          speak(twiml, 'Verification failed. It seems you may not have said your enrolled phrase. Please try again.');
+          twiml.say('Verification failed. It seems you may not have said your enrolled phrase. Please try again.');
           numTries += 1;
           twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
           break;
         case 'FAIL':
-          speak(twiml, 'Your verification did not pass, please try again.');
+          twiml.say('Your verification did not pass, please try again.');
           numTries += 1;
           twiml.redirect('/verify');
           break;
         case 'SSTQ':
-          speak(twiml, 'Please speak a little louder and try again.');
+          twiml.say('Please speak a little louder and try again.');
           numTries += 1;
           twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
           break;
         case 'SSTL':
-          speak(twiml, 'Please speak a little quieter and try again.');
+          twiml.say('Please speak a little quieter and try again.');
           numTries += 1;
           twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
           break;
         default:
-          speak(twiml, 'Something went wrong. Your verification did not pass, please try again.');
+          twiml.say('Something went wrong. Your verification did not pass, please try again.');
           numTries += 1;
           twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
       }

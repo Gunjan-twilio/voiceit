@@ -6,13 +6,6 @@ function removeSpecialChars(text) {
   return text.replace(/[^0-9a-z]/gi, '');
 }
 
-function speak(twiml, textToSpeak, contentLanguage = 'en-US') {
-  twiml.say(textToSpeak, {
-    voice: 'alice',
-    language: contentLanguage,
-  });
-}
-
 const callerUserId = async (phone, context) => {
   let userId = 0;
   try {
@@ -71,7 +64,11 @@ exports.handler = async function (context, event, callback) {
   const twiml = new Twilio.twiml.VoiceResponse();
   const digits = event.Digits;
   const phone = removeSpecialChars(event.From);
-  const userId = await callerUserId(phone, context);
+  let userId = event.request.cookies.userId || '';
+  console.log(`Retrieved cookie userId: ${userId}`);
+  if (userId === '') {
+    userId = await callerUserId(phone, context);
+  }
   // When the caller asked to enroll by pressing `1`, provide friendly
   // instructions, otherwise, we always assume their intent is to verify.
   if (digits === 1) {
@@ -83,10 +80,7 @@ exports.handler = async function (context, event, callback) {
       // @TODO: check the response and make sure it was successful,
       // otherwise let the user know something went wrong
       async () => {
-        speak(
-          twiml,
-          'You have chosen to re enroll your voice, you will now be asked to say a phrase three times, then you will be able to log in with that phrase',
-        );
+        twiml.say('You have chosen to re enroll your voice, you will now be asked to say a phrase three times, then you will be able to log in with that phrase');
         twiml.redirect(`${context.SERVERLESS_BASE_URL}/enroll`);
         callback(null, twiml);
       },
@@ -112,16 +106,13 @@ exports.handler = async function (context, event, callback) {
         userId,
       },
       async (jsonResponse) => {
-        speak(twiml, 'You have chosen to verify your Voice.');
+        twiml.say('You have chosen to verify your Voice.');
         const enrollmentsCount = jsonResponse.count;
         if (enrollmentsCount > 2) {
           twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
           callback(null, twiml);
         } else {
-          speak(
-            twiml,
-            'You do not have enough enrollments and need to re enroll your voice.',
-          );
+          twiml.say('You do not have enough enrollments and need to re enroll your voice.');
           // Delete User's voice enrollments and re-enroll
           myVoiceIt.deleteAllEnrollments(
             {

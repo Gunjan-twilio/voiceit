@@ -58,27 +58,27 @@ exports.handler = async function (context, event, callback) {
         case 'STTF':
           twiml.say('Verification failed. It seems you may not have said your enrolled phrase. Please try again.');
           numTries += 1;
-          twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
+          twiml.redirect(`/voice/verify`);
           break;
         case 'FAIL':
           twiml.say('Your verification did not pass, please try again.');
           numTries += 1;
-          twiml.redirect('/verify');
+          twiml.redirect('/voice/verify');
           break;
         case 'SSTQ':
           twiml.say('Please speak a little louder and try again.');
           numTries += 1;
-          twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
+          twiml.redirect(`/voice/verify`);
           break;
         case 'SSTL':
           twiml.say('Please speak a little quieter and try again.');
           numTries += 1;
-          twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
+          twiml.redirect(`/voice/verify`);
           break;
         default:
           twiml.say('Something went wrong. Your verification did not pass, please try again.');
           numTries += 1;
-          twiml.redirect(`${context.SERVERLESS_BASE_URL}/verify`);
+          twiml.redirect(`/voice/verify`);
       }
     }
     callback(null, twiml);

@@ -1,14 +1,14 @@
 const VoiceIt = require('voiceit2-nodejs');
 
-function handleSuccessfulEnrollment(twiml, enrollmentCount, baseUrl) {
+function handleSuccessfulEnrollment(twiml, enrollmentCount) {
   // VoiceIt requires at least 3 successful enrollments.
   const thereAreEnoughEnrollments = enrollmentCount > 2;
   if (thereAreEnoughEnrollments) {
     twiml.say('Thank you, recording received, you are now enrolled and ready to log in');
-    twiml.redirect(`${baseUrl}/verify`);
+    twiml.redirect(`/voice/verify`);
   } else {
     twiml.say('Thank you, recording received,you will now be asked to record your phrase again');
-    twiml.redirect(`${baseUrl}/enroll?enrollmentCount=${enrollmentCount}`);
+    twiml.redirect(`/voice/enroll?enrollmentCount=${enrollmentCount}`);
   }
 }
 
@@ -41,10 +41,10 @@ exports.handler = async function (context, event, callback) {
       const enrollmentWasSuccessful = jsonResponse.responseCode === 'SUCC';
       if (enrollmentWasSuccessful) {
         enrollmentCount += 1;
-        handleSuccessfulEnrollment(twiml, enrollmentCount, context.SERVERLESS_BASE_URL);
+        handleSuccessfulEnrollment(twiml, enrollmentCount);
       } else {
         twiml.say('Your recording was not successful, please try again');
-        twiml.redirect(`${context.SERVERLESS_BASE_URL}/enroll?enrollmentCount=${enrollmentCount}`);
+        twiml.redirect(`/voice/enroll?enrollmentCount=${enrollmentCount}`);
       }
 
       response

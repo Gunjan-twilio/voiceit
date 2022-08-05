@@ -7,7 +7,7 @@ exports.handler = async function (context, event, callback) {
   twiml.say(context.VOICEPRINT_PHRASE);
 
   twiml.record({
-    action: `${context.SERVERLESS_BASE_URL}/process_enrollment?enrollmentCount=${enrollmentCount}`,
+    action: `/voice/process_enrollment?enrollmentCount=${enrollmentCount}`,
     maxLength: 5,
     trim: 'do-not-trim',
   });

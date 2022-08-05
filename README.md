@@ -10,7 +10,7 @@ Add .env file to the root folder
 **Required variables**: 
 * Twilio: ACCOUNT_SID, AUTH_TOKEN
 * VoiceIt: VOICEIT_API_KEY, VOICEIT_API_TOKEN, CONTENT_LANGUAGE, VOICEPRINT_PHRASE
-* Database: DATABASE_URL, AIRTABLE_API_KEY, AIRTABLE_BASE_ID, SERVERLESS_BASE_URL 
+* Database: DATABASE_URL, AIRTABLE_API_KEY, AIRTABLE_BASE_ID
 
 Example: 
 ```
@@ -23,7 +23,6 @@ VOICEPRINT_PHRASE='Never forget tomorrow is a new day'
 DATABASE_URL=test
 AIRTABLE_API_KEY='key************'
 AIRTABLE_BASE_ID='app*********'
-SERVERLESS_BASE_URL='https://test-9999-dev.twil.io/test'
 ```
 
 Route incoming calls to functions/voice/incoming_call.js endpoint

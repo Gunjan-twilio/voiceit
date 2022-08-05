@@ -4,7 +4,7 @@ exports.handler = async function(context, event, callback) {
   speak(twiml, context.VOICEPRINT_PHRASE, context.CONTENT_LANGUAGE);
 
   twiml.record({
-    action: context.SERVERLESS_BASE_URL + '/process_verification',
+    action: '/voice/process_verification',
     maxLength: '5',
     trim: 'do-not-trim',
   });

@@ -62,13 +62,13 @@ exports.handler = async function (context, event, callback) {
         // Let's provide the caller with an opportunity to enroll by typing `1` on
         // their phone's keypad. Use the <Gather> verb to collect user input
         const gather = twiml.gather({
-          action: `${context.SERVERLESS_BASE_URL}/registered_user_menu`,
+          action: `/voice/registered_user_menu`,
           numDigits: 1,
           timeout: 5,
         });
         gather.say('You may now log in, or press one to re enroll or two to delete your account');
         twiml.redirect(
-          `${context.SERVERLESS_BASE_URL}/registered_user_menu?digits=TIMEOUT`,
+          `/voice/registered_user_menu?digits=TIMEOUT`,
         );
       } else {
         // Create a new user for new number
@@ -95,7 +95,7 @@ exports.handler = async function (context, event, callback) {
             },
           );
           /* Code for inserting new user into a database */
-          twiml.redirect(`${context.SERVERLESS_BASE_URL}/enroll`);
+          twiml.redirect(`/voice/enroll`);
         });
       }
       response

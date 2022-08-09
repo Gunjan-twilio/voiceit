@@ -14,8 +14,6 @@ Add .env file to the root folder
 
 Example: 
 ```
-ACCOUNT_SID='AC406**********************'
-AUTH_TOKEN='69ee********************'
 VOICEIT_API_KEY='key_********************'
 VOICEIT_API_TOKEN='tok_*********************'
 CONTENT_LANGUAGE=en-US

@@ -1,7 +1,8 @@
-exports.handler = async function(context, event, callback) {
+exports.handler = async function (context, event, callback) {
+  // eslint-disable-next-line no-undef
   const twiml = new Twilio.twiml.VoiceResponse();
-  speak(twiml, 'Please say the following phrase to verify your voice ');
-  speak(twiml, context.VOICEPRINT_PHRASE, context.CONTENT_LANGUAGE);
+  twiml.say('Please say the following phrase to verify your voice ');
+  twiml.say(context.VOICEPRINT_PHRASE);
 
   twiml.record({
     action: '/voice/process_verification',
@@ -10,9 +11,3 @@ exports.handler = async function(context, event, callback) {
   });
   callback(null, twiml);
 };
-function speak(twiml, textToSpeak, contentLanguage = "en-US"){
-  twiml.say(textToSpeak, {
-    voice: "alice",
-    language: contentLanguage
-  });
-}

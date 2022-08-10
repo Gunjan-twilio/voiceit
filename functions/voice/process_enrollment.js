@@ -5,7 +5,7 @@ function handleSuccessfulEnrollment(twiml, enrollmentCount) {
   const thereAreEnoughEnrollments = enrollmentCount > 2;
   if (thereAreEnoughEnrollments) {
     twiml.say('Thank you, recording received, you are now enrolled and ready to log in');
-    twiml.redirect(`/voice/verify`);
+    twiml.redirect('/voice/verify');
   } else {
     twiml.say('Thank you, recording received,you will now be asked to record your phrase again');
     twiml.redirect(`/voice/enroll?enrollmentCount=${enrollmentCount}`);

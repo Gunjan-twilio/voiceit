@@ -32,7 +32,7 @@ exports.handler = async function (context, event, callback) {
       // otherwise let the user know something went wrong
       async () => {
         twiml.say('You have chosen to re enroll your voice, you will now be asked to say a phrase three times, then you will be able to log in with that phrase');
-        twiml.redirect(`/voice/enroll`);
+        twiml.redirect('/voice/enroll');
         callback(null, twiml);
       },
     );
@@ -108,7 +108,7 @@ exports.handler = async function (context, event, callback) {
         twiml.say('You have chosen to verify your Voice.');
         const enrollmentsCount = jsonResponse.count;
         if (enrollmentsCount > 2) {
-          twiml.redirect(`/voice/verify`);
+          twiml.redirect('/voice/verify');
           callback(null, twiml);
         } else {
           twiml.say('You do not have enough enrollments and need to re enroll your voice.');
@@ -119,7 +119,7 @@ exports.handler = async function (context, event, callback) {
             },
             // eslint-disable-next-line no-unused-vars
             async (deleteEnrollmentsResponse) => {
-              twiml.redirect(`/voice/enroll`);
+              twiml.redirect('/voice/enroll');
               callback(null, twiml);
             },
           );

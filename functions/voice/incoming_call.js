@@ -62,18 +62,24 @@ exports.handler = async function (context, event, callback) {
         // Let's provide the caller with an opportunity to enroll by typing `1` on
         // their phone's keypad. Use the <Gather> verb to collect user input
         const gather = twiml.gather({
-          action: `/voice/registered_user_menu`,
+          action: '/voice/registered_user_menu',
           numDigits: 1,
           timeout: 5,
         });
         gather.say('You may now log in, or press one to re enroll or two to delete your account');
         twiml.redirect(
-          `/voice/registered_user_menu?digits=TIMEOUT`,
+          '/voice/registered_user_menu?digits=TIMEOUT',
         );
+        response
+          .setBody(twiml.toString())
+          .appendHeader('Content-Type', 'text/xml')
+          .setCookie('userId', userId);
+
+        callback(null, response);
       } else {
         // Create a new user for new number
         myVoiceIt.createUser(async (createUserResponse) => {
-          twiml.say('Welcome to the Voice It Verification Demo Test, you are a new user and will now be enrolled');
+          twiml.say('Welcome to the Voice It Verification Demo, you are a new user and will now be enrolled');
           userId = createUserResponse.userId;
           /* Code for inserting new user into a database */
           const base = new AirTable({ apiKey: context.AIRTABLE_API_KEY }).base(
@@ -95,15 +101,15 @@ exports.handler = async function (context, event, callback) {
             },
           );
           /* Code for inserting new user into a database */
-          twiml.redirect(`/voice/enroll`);
+          twiml.redirect('/voice/enroll');
+          response
+            .setBody(twiml.toString())
+            .appendHeader('Content-Type', 'text/xml')
+            .setCookie('userId', userId);
+
+          callback(null, response);
         });
       }
-      response
-        .setBody(twiml.toString())
-        .appendHeader('Content-Type', 'text/xml')
-        .setCookie('userId', userId);
-
-      callback(null, response);
     },
   );
   // callback(null, twiml);

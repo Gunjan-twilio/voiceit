@@ -11,8 +11,8 @@ exports.handler = async function(context, event, callback) {
   callback(null, twiml);
 };
 function speak(twiml, textToSpeak, contentLanguage = "en-US"){
-  twiml.say(textToSpeak, {
+  twiml.say({
     voice: "alice",
     language: contentLanguage
-  });
+  }, textToSpeak);
 }

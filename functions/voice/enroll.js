@@ -4,7 +4,7 @@ exports.handler = async function (context, event, callback) {
   const enrollmentCount = event.enrollmentCount || 0;
 
   twiml.say('Please say the following phrase to enroll ');
-  twiml.say(context.VOICEPRINT_PHRASE);
+  speak(twiml, context.VOICEPRINT_PHRASE, context.CONTENT_LANGUAGE);
 
   twiml.record({
     action: `/voice/process_enrollment?enrollmentCount=${enrollmentCount}`,
@@ -14,3 +14,10 @@ exports.handler = async function (context, event, callback) {
 
   callback(null, twiml);
 };
+
+function speak(twiml, textToSpeak, contentLanguage){
+  twiml.say({
+    voice: "woman",
+    language: contentLanguage
+  }, textToSpeak);
+}

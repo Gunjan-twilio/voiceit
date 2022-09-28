@@ -50,7 +50,7 @@ AIRTABLE_BASE_ID='app*********'
 export ACCOUNT_SID=ACXXXXXXXXXXXXXXXXXXXXXXXX
 export AUTH_TOKEN=XXXXXXXXXXXXXXXXXXXXXX
 ```
-* Run twilio serverless:deploy to deploy your functions and assets to Twilio’s serverless environment. 
+* Run `twilio serverless:deploy` to deploy your functions and assets to Twilio’s serverless environment. 
 ### Connect your Phone Number 
 * If you do not already have a Twilio Phone Number, follow [these instructions](https://support.twilio.com/hc/en-us/articles/223135247-How-to-Search-for-and-Buy-a-Twilio-Phone-Number-from-Console) to buy one. 
 Access the Active Numbers page in the Console. Click the desired phone number to modify.
